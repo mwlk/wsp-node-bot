@@ -20,6 +20,8 @@ const withSession = () => {
   client.on("ready", () => {
     console.log("ready");
     spinner.stop();
+
+    listenMessage();
   });
 
   client.on("auth_failure", () => {
@@ -49,4 +51,29 @@ const withOutSession = () => {
   client.initialize();
 };
 
-(fs.existsSync(SESSION_FILE_PATH)) ? withSession() : withOutSession();
+const listenMessage = () => {
+  client.on("message", (msg) => {
+    const { from, to, body } = msg;
+
+    console.log(from, to, body);
+
+    switch (body) {
+      case "hola":
+        sendMessage(from, "saluda mirko");
+        break;
+      case "chau":
+        sendMessage(from, "despide mirko");
+        break;
+    }
+  });
+};
+
+const sendMessage = (to, msg) => {
+  client.sendMessage(to, msg);
+};
+
+const sendMedia = (to, media) => {
+  client.sendMessage(to, msg);
+};
+
+fs.existsSync(SESSION_FILE_PATH) ? withSession() : withOutSession();
