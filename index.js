@@ -1,8 +1,10 @@
 const fs = require("fs");
-const ora = require("ora");
-const chalk = require("chalk");
+// const ora = require("ora");
+// const chalk = require("chalk");
+const excelJS = require("exceljs");
+const moment = require("moment");
 
-const { Client } = require("whatsapp-web.js");
+const { Client, MessageMedia } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 
 const SESSION_FILE_PATH = "./session.json";
@@ -10,7 +12,7 @@ let client;
 let sessionData;
 
 const withSession = () => {
-  const spinner = ora(`Loading ${chalk.yellow("validando")}`);
+  //   const spinner = ora(`Loading ${chalk.yellow("validando")}`);
   sessionData = require(SESSION_FILE_PATH);
   spinner.start();
   client = new Client({
@@ -64,16 +66,68 @@ const listenMessage = () => {
       case "chau":
         sendMessage(from, "despide mirko");
         break;
+      default:
+        sendMedia(from, "images.png");
     }
   });
+
+  saveHistorial(from, body);
 };
 
 const sendMessage = (to, msg) => {
   client.sendMessage(to, msg);
 };
 
-const sendMedia = (to, media) => {
-  client.sendMessage(to, msg);
+const sendMedia = (to, file) => {
+  const media = MessageMedia.fromFilePath(`./assets/${file}`);
+
+  client.sendMessage(to, media);
+};
+
+const saveHistorial = (from, msg) => {
+  const path = `./log-chats/${from}.xlsx`;
+
+  const book = new excelJS.Workbook();
+  const date = moment().format("DD-MM-YYYY hh:mm");
+
+  if (fs.existsSync(path)) {
+    book.xlsx.readFile(path).then(() => {
+      const sheet = book.getWorksheet(1);
+
+      const lastRow = sheet.lastRow;
+
+      let rowToInsert = sheet.getRow(++lastRow.number);
+      rowToInsert.getCell("A").value = date;
+      rowToInsert.getCell("B").value = msg;
+      rowToInsert.commit();
+
+      book.xlsx
+        .writeFile(path)
+        .then(() => {
+          console.log("chat updated");
+        })
+        .catch(() => {
+          console.log("error when try update log");
+        });
+    });
+  } else {
+    const sheet = book.addWorksheet("Chats");
+
+    sheet.columns = [
+      { header: "Fecha", key: "date" },
+      { header: "Mensaje", key: "msg" },
+    ];
+
+    sheet.addRow([date, msg]);
+    book.xlsx
+      .writeFile(path)
+      .then(() => {
+        console.log("generete excel");
+      })
+      .catch(() => {
+        console.log("error when write excel file");
+      });
+  }
 };
 
 fs.existsSync(SESSION_FILE_PATH) ? withSession() : withOutSession();
