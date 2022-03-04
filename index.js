@@ -23,17 +23,16 @@ const sendToAPI = (req, res) => {
   const { message, to } = req.body;
   const numberPhone = `${to}@u.us`;
 
-  client.on('authenticated', () => {
+  client.on("authenticated", () => {
     sendMessage(numberPhone, message);
-   return  res.send({ status: "BOT DICSYS", data: `${message}` });
-  })
-  
-  client.on('auth_failure', () => {
+    return res.send({ status: "BOT DICSYS", data: `${message}` });
+  });
+
+  client.on("auth_failure", () => {
     return res.send({ status: "BOT DICSYS", data: `fail auth` });
-  })
+  });
 
   return res.send({ status: "BOT DICSYS", data: `default` });
-  
 };
 
 //! define post endpoint
@@ -64,7 +63,18 @@ const withSession = () => {
 
 const withOutSession = () => {
   console.log("sin sesion");
-  client = new Client();
+  
+  client = new Client({
+    session: {},
+    // authStrategy: new LegacySessionAuth({
+    //     session: { }
+    // }),
+    restartOnAuthFail: true,
+    puppeteer: {
+      args: ["--no-sandbox"],
+    },
+  });
+
   client.on("qr", (qr) => {
     qrcode.generate(qr), { small: true };
   });
