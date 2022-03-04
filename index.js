@@ -1,3 +1,6 @@
+const express = require("express");
+const cors = require("cors");
+
 const fs = require("fs");
 // const ora = require("ora");
 // const chalk = require("chalk");
@@ -10,6 +13,18 @@ const qrcode = require("qrcode-terminal");
 const SESSION_FILE_PATH = "./session.json";
 let client;
 let sessionData;
+
+const app = express();
+app.use(express.urlencoded({ extended: true }));
+
+const sendToAPI = (req, res) => {
+  const { message, to } = req.body;
+  console.log(message, to);
+  res.send({ status: "BOT DICSYS" });
+};
+
+//! define post endpoint
+app.post("/send", sendToAPI);
 
 const withSession = () => {
   //   const spinner = ora(`Loading ${chalk.yellow("validando")}`);
@@ -131,3 +146,7 @@ const saveHistorial = (from, msg) => {
 };
 
 fs.existsSync(SESSION_FILE_PATH) ? withSession() : withOutSession();
+
+app.listen(4545, () => {
+  console.log("BOT DICSYS UP");
+});
