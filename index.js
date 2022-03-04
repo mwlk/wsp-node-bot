@@ -15,12 +15,25 @@ let client;
 let sessionData;
 
 const app = express();
+
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
 const sendToAPI = (req, res) => {
   const { message, to } = req.body;
-  console.log(message, to);
-  res.send({ status: "BOT DICSYS" });
+  const numberPhone = `${to}@u.us`;
+
+  client.on('authenticated', () => {
+    sendMessage(numberPhone, message);
+   return  res.send({ status: "BOT DICSYS", data: `${message}` });
+  })
+  
+  client.on('auth_failure', () => {
+    return res.send({ status: "BOT DICSYS", data: `fail auth` });
+  })
+
+  return res.send({ status: "BOT DICSYS", data: `default` });
+  
 };
 
 //! define post endpoint
