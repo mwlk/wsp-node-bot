@@ -44,7 +44,7 @@ const listenMessage = () => {
         sendMessage(from, "despide mirko");
         break;
       case "file":
-        sendMedia(from, "images.png");
+        sendMedia(from, "images.png"); 
         break;
     }
 
@@ -104,6 +104,7 @@ const sendMessage = (to, msg) => {
 
 const sendMedia = (to, file) => {
   const media = MessageMedia.fromFilePath(`./assets/${file}`);
+  console.log(media)
 
   client.sendMessage(to, media);
 };
